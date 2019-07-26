@@ -28,6 +28,7 @@ const INFLUX_ADDRESS: &str = dotenv!("INFLUX_ADDRESS");
 const INFLUX_USER: &str = dotenv!("INFLUX_USER");
 const INFLUX_PASSWORD: &str = dotenv!("INFLUX_PASSWORD");
 const INFLUX_DATABASE: &str = dotenv!("INFLUX_DATABASE");
+const REPORTING_INTERVAL_MILLIS: &str = dotenv!("REPORTING_INTERVAL_MILLIS");
 
 #[runtime::main]
 async fn main() -> Result<(), ()> {
@@ -60,7 +61,11 @@ async fn main() -> Result<(), ()> {
     dev.set_sensor_mode(PowerMode::ForcedMode)
         .map_err(|e| eprintln!("Setting sensor mode failed: {:?}", e))?;
 
-    let mut interval_s = Interval::new(Duration::from_secs(60));
+    let mut interval_s = Interval::new(Duration::from_millis(
+        REPORTING_INTERVAL_MILLIS
+            .parse()
+            .expect("Invalid reporting interval"),
+    ));
 
     while let Some(_) = interval_s.next().await {
         let (data, state) = dev
